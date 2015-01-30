@@ -5,6 +5,7 @@ import java.awt.Container;
 import java.awt.Desktop;
 import java.awt.Image;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,12 +20,11 @@ import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
 
 import app.controller.FileTable;
 import app.controller.FileTree;
-
-
-
+import app.controller.NavigationBar;
 
 
 public class Application {
@@ -34,18 +34,15 @@ public class Application {
 	
 	// Main Gui container
 	private JPanel gui;
-	
-	// Used to open/edit/print files.
-    private Desktop desktop;
-    
-    // Provides nice icons and names for files.
-    private FileSystemView fileSystemView;
     
     // The file tree
     private FileTree tree;
     
     // The file table
     private FileTable table;
+    
+    // The navigation bar
+    private NavigationBar nav;
     
 
 	public Container getGui() {
@@ -60,70 +57,106 @@ public class Application {
 			table = new FileTable();
 			JScrollPane tableScroll = new JScrollPane(table.getView());
 			gui.add(tableScroll);
+			
+			nav = new NavigationBar();
+			gui.add(nav.getView(), BorderLayout.NORTH);
 		}
 		return gui;
-	}
-	
-	public Desktop getDesktop() {
-		return desktop;
-	}
-	
-	public FileSystemView getFileSystemView() {
-		return fileSystemView;
 	}
 	
 	public FileTree getTree() {
 		return tree;
 	}
 	
-	// When a folder is selected
-	public void setFolder(final DefaultMutableTreeNode node) {
+	public FileTable getTable() {
+		return table;
+	}
+
+	// When a file is opened
+	public void openFile(File f) {
+		if(f.isDirectory()) throw new IllegalArgumentException("Folder not expected");
+		try {
+			Desktop.getDesktop().open(f);
+		} 
+		catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	// When a folder is opened
+	public void openFolder(final DefaultMutableTreeNode parentNode, final File subdir, boolean saveState) {
+		if(!subdir.isDirectory()) throw new IllegalArgumentException("Folder expected");
+		
+		if(saveState) nav.saveState(parentNode, subdir); // update the navigation stack
+		
 		tree.setEnabled(false);
+		table.setEnabled(false);
 		// @TODO progress bar ON
+		
+		// get the node corresponding to the subdir
+		DefaultMutableTreeNode n=null;
+    	int childrenCount = tree.getModel().getChildCount(parentNode);
+    	for (int i = 0; i < childrenCount; i++) {
+    		DefaultMutableTreeNode child = (DefaultMutableTreeNode)tree.getModel().getChild(parentNode, i);
+    		File f = (File) child.getUserObject();
+    		if(f.equals(subdir)) {
+    			n = child;
+    			break;
+    		}
+		}
+
+    	// if not found then error
+    	if(n==null) throw new IllegalArgumentException("No file "+subdir.getName()+" in node "+((File)parentNode.getUserObject()).getName());
+    	
+    	final TreePath path = new TreePath(n.getPath());
+    	final DefaultMutableTreeNode node = n;
+    	
 		
 		SwingWorker<Void, File> worker = new SwingWorker<Void, File>() {
             @Override
             public Void doInBackground() {
-                File file = (File) node.getUserObject();
-                if (file.isDirectory()) {
-                	final File[] files = fileSystemView.getFiles(file, true);
-                    if (node.isLeaf()) {
-                        for (File child : files) {
-                            if (child.isDirectory()) {
-                                publish(child);
-                            }
+            	final File[] files = FileSystemView.getFileSystemView().getFiles(subdir, true);
+            	
+            	// lazy tree loading
+                if (node.isLeaf()) {
+                    for (File child : files) {
+                        if (child.isDirectory()) {
+                            publish(child);
                         }
                     }
-                    //Fill the table with files ( /!\ call EDT thread with invoke later )
-                    SwingUtilities.invokeLater(new Runnable() {
-                    	public void run() {
-                    		table.setTableData(files);
-                    	}
-                    });
                 }
+                
+                //Fill the table with files ( /!\ call EDT thread with invoke later )
+                SwingUtilities.invokeLater(new Runnable() {
+                	public void run() {
+                		table.setTableData(files);
+                	}
+                });
                 return null;
             }
 
             @Override
-            protected void process(List<File> chunks) {
+            protected void process(List<File> chunks) { // executed in EDT
                 for (File child : chunks) {
-                    node.add(new DefaultMutableTreeNode(child));
+                    node.add(new DefaultMutableTreeNode(child)); // population of the tree
                 }
             }
 
             @Override
             protected void done() {
+            	// select the node
+            	//if(!tree.getView().isExpanded(path)) tree.getView().expandPath(path);
+        		tree.getView().setSelectionPath(path);
+        		tree.getView().scrollPathToVisible(path);
+        		
                 //@TODO progress bar OFF
                 tree.setEnabled(true);
+                table.setEnabled(true);
             }
         };
         worker.execute();
 		
-	}
-
-	public Application() {
-		fileSystemView = FileSystemView.getFileSystemView();
-        desktop = Desktop.getDesktop();
 	}
 	
 	// Singleton

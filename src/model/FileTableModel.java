@@ -1,11 +1,14 @@
 package model;
 
+
 import java.io.File;
 import java.util.Date;
 
 import javax.swing.ImageIcon;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.table.AbstractTableModel;
+
+import util.Size;
 
 public class FileTableModel extends AbstractTableModel {
 	
@@ -34,9 +37,9 @@ public class FileTableModel extends AbstractTableModel {
             case 1:
                 return fileSystemView.getSystemDisplayName(file);
             case 2:
-            	return file.length();
+            	return new Size(file.length());
             case 3:
-            	return file.lastModified();
+            	return new Date(file.lastModified());
             default:
                 throw new IllegalArgumentException(this.getClass().getSimpleName()+" getValueAt("+ String.valueOf(row)+", "+String.valueOf(column)+")");
         }
@@ -50,12 +53,31 @@ public class FileTableModel extends AbstractTableModel {
         switch (column) {
             case 0:
                 return ImageIcon.class;
+            case 2:
+            	return Size.class;
             case 3:
                 return Date.class;
             default:
             	return String.class;
-        }
-        
+        }   
+    }
+    
+    public int getColumnMaxWidth(int column) {
+    	switch (column) {
+	        case 0:
+	            return 20;
+	        default:
+	        	return 300;
+	    } 
+    }
+    
+    public int getColumnMinWidth(int column) {
+    	switch (column) {
+	        case 0:
+	            return 0;
+	        default:
+	        	return 20;
+	    } 
     }
 
     public String getColumnName(int column) {
