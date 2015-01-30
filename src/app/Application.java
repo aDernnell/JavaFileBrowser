@@ -30,18 +30,15 @@ import app.controller.NavigationBar;
 public class Application {
 
 	private static Application instance; // singleton
-	private static final String APP_NAME = "My application";
+	private static final String APP_NAME = "My explorer";
 	
 	// Main Gui container
 	private JPanel gui;
     
-    // The file tree
     private FileTree tree;
     
-    // The file table
     private FileTable table;
     
-    // The navigation bar
     private NavigationBar nav;
     
 
@@ -74,7 +71,7 @@ public class Application {
 
 	// When a file is opened
 	public void openFile(File f) {
-		if(f.isDirectory()) throw new IllegalArgumentException("Folder not expected");
+		if(f.isDirectory()) throw new IllegalArgumentException("File expected");
 		try {
 			Desktop.getDesktop().open(f);
 		} 
@@ -88,74 +85,85 @@ public class Application {
 	public void openFolder(final DefaultMutableTreeNode parentNode, final File subdir, boolean saveState) {
 		if(!subdir.isDirectory()) throw new IllegalArgumentException("Folder expected");
 		
+		if(nav.sameState(parentNode, subdir)) return; // no need to open the folder already opened
+		
 		if(saveState) nav.saveState(parentNode, subdir); // update the navigation stack
+		
+		nav.setPath(subdir.getAbsolutePath());
 		
 		tree.setEnabled(false);
 		table.setEnabled(false);
-		// @TODO progress bar ON
+		nav.activateProgressBar(true);
 		
-		// get the node corresponding to the subdir
-		DefaultMutableTreeNode n=null;
-    	int childrenCount = tree.getModel().getChildCount(parentNode);
-    	for (int i = 0; i < childrenCount; i++) {
-    		DefaultMutableTreeNode child = (DefaultMutableTreeNode)tree.getModel().getChild(parentNode, i);
-    		File f = (File) child.getUserObject();
-    		if(f.equals(subdir)) {
-    			n = child;
-    			break;
-    		}
-		}
-
-    	// if not found then error
-    	if(n==null) throw new IllegalArgumentException("No file "+subdir.getName()+" in node "+((File)parentNode.getUserObject()).getName());
+    	final int childrenCount = tree.getModel().getChildCount(parentNode);
     	
-    	final TreePath path = new TreePath(n.getPath());
-    	final DefaultMutableTreeNode node = n;
-    	
-		
-		SwingWorker<Void, File> worker = new SwingWorker<Void, File>() {
-            @Override
-            public Void doInBackground() {
-            	final File[] files = FileSystemView.getFileSystemView().getFiles(subdir, true);
-            	
-            	// lazy tree loading
-                if (node.isLeaf()) {
-                    for (File child : files) {
-                        if (child.isDirectory()) {
-                            publish(child);
-                        }
-                    }
-                }
-                
-                //Fill the table with files ( /!\ call EDT thread with invoke later )
-                SwingUtilities.invokeLater(new Runnable() {
-                	public void run() {
-                		table.setTableData(files);
-                	}
-                });
-                return null;
-            }
+    	SwingWorker<Void, DefaultMutableTreeNode> worker1 = new SwingWorker<Void, DefaultMutableTreeNode>() {
 
-            @Override
-            protected void process(List<File> chunks) { // executed in EDT
-                for (File child : chunks) {
-                    node.add(new DefaultMutableTreeNode(child)); // population of the tree
-                }
-            }
+			@Override
+			protected Void doInBackground() throws Exception {
+				// find the node corresponding to the subdir in the tree
+		    	for (int i = 0; i < childrenCount; i++) {
+		    		DefaultMutableTreeNode child = (DefaultMutableTreeNode)tree.getModel().getChild(parentNode, i);
+		    		File f = (File) child.getUserObject();
+		    		if(f.equals(subdir)) {
+		    			publish(child);
+		    			break;
+		    		}
+				}
+		    	return null;
+			}
+			
+			@Override
+			protected void process(List<DefaultMutableTreeNode> chunks) { // in EDT
+				final DefaultMutableTreeNode node = chunks.get(0);
+				SwingWorker<Void, File> worker2 = new SwingWorker<Void, File>() {
+		            @Override
+		            public Void doInBackground() {
 
-            @Override
-            protected void done() {
-            	// select the node
-            	//if(!tree.getView().isExpanded(path)) tree.getView().expandPath(path);
-        		tree.getView().setSelectionPath(path);
-        		tree.getView().scrollPathToVisible(path);
-        		
-                //@TODO progress bar OFF
-                tree.setEnabled(true);
-                table.setEnabled(true);
-            }
-        };
-        worker.execute();
+		            	final File[] files = FileSystemView.getFileSystemView().getFiles(subdir, true);
+		            	
+		            	// lazy tree loading
+		                if ( node.isLeaf()) {
+		                	System.out.println("publish");
+		                    for (File child : files) {
+		                        if (child.isDirectory()) {
+		                            publish(child);
+		                        }
+		                    }
+		                }
+		                
+		                //Fill the table with files ( /!\ call EDT thread with invoke later )
+		                SwingUtilities.invokeLater(new Runnable() {
+		                	public void run() {
+		                		table.setTableData(files);
+		                	}
+		                });
+		                return null;
+		            }
+
+		            @Override
+		            protected void process(List<File> chunks) { // executed in EDT
+		                for (File child : chunks) {
+		                    node.add(new DefaultMutableTreeNode(child)); // population of the tree
+		                }
+		            }
+
+		            @Override
+		            protected void done() {
+		            	// select the node
+		        		tree.getView().setSelectionPath(new TreePath(node.getPath()));
+		        		tree.getView().scrollPathToVisible(new TreePath(node.getPath()));
+		        		
+		                nav.activateProgressBar(false);
+		                tree.setEnabled(true);
+		                table.setEnabled(true);
+		            }
+		        };
+		        worker2.execute();
+			}
+    		
+    	};
+    	worker1.execute();
 		
 	}
 	
