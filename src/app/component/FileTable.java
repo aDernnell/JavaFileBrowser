@@ -1,4 +1,4 @@
-package app.controller;
+package app.component;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -6,7 +6,9 @@ import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.swing.Icon;
 import javax.swing.JLabel;
@@ -52,14 +54,20 @@ public class FileTable {
 			
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				// TODO Auto-generated method stub
+				maybeShowPopup(e);
 				
 			}
 			
 			@Override
 			public void mousePressed(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
+				maybeShowPopup(e);
+			}
+			
+			private void maybeShowPopup(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					PopupMenu popup = new PopupMenu();
+		            popup.show(e.getComponent(),e.getX(), e.getY());
+		        }
 			}
 			
 			@Override
@@ -103,6 +111,15 @@ public class FileTable {
 		});
         
         
+	}
+	
+	public List<File> getSelectedFiles() {
+		int[] indices = view.getSelectedRows();
+		List<File> lf = new ArrayList<File>();
+		for (int index : indices) {
+			lf.add(model.getFile(index));
+		}
+		return lf;
 	}
 	
 	public void setTableData(File[] files) {

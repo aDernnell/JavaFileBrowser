@@ -1,4 +1,4 @@
-package app.controller;
+package app.component;
 
 import java.awt.Container;
 import java.awt.event.ActionEvent;

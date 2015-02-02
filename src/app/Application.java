@@ -22,9 +22,9 @@ import javax.swing.filechooser.FileSystemView;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
-import app.controller.FileTable;
-import app.controller.FileTree;
-import app.controller.NavigationBar;
+import app.component.FileTable;
+import app.component.FileTree;
+import app.component.NavigationBar;
 
 
 public class Application {

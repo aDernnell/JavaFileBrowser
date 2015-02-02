@@ -18,7 +18,8 @@ public class FileTableModel extends AbstractTableModel {
             "Icon",
             "Name",
             "Size",
-            "Last Modified"
+            "Last Modified",
+            "Properties"
     };
 
     public FileTableModel() {
@@ -40,6 +41,17 @@ public class FileTableModel extends AbstractTableModel {
             	return new Size(file.length());
             case 3:
             	return new Date(file.lastModified());
+            case 4:
+            {
+            	StringBuilder sb = new StringBuilder();
+            	if(file.canRead()) sb.append("R");
+            	else sb.append(" ");
+            	if(file.canWrite()) sb.append("W");
+            	else sb.append(" ");
+            	if(file.canExecute()) sb.append("E");
+            	else sb.append(" ");
+            	return sb.toString();
+            }
             default:
                 throw new IllegalArgumentException(this.getClass().getSimpleName()+" getValueAt("+ String.valueOf(row)+", "+String.valueOf(column)+")");
         }
