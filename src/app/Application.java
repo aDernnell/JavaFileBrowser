@@ -1,17 +1,23 @@
 package app;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Desktop;
 import java.awt.Image;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.AccessDeniedException;
+import java.nio.file.DirectoryIteratorException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
@@ -68,12 +74,16 @@ public class Application {
 	public FileTable getTable() {
 		return table;
 	}
+	
+	public NavigationBar getNav() {
+		return nav;
+	}
 
 	// When a file is opened
-	public void openFile(File f) {
-		if(f.isDirectory()) throw new IllegalArgumentException("File expected");
+	public void openFile(Path f) {
+		if(Files.isDirectory(f)) throw new IllegalArgumentException("File expected");
 		try {
-			Desktop.getDesktop().open(f);
+			Desktop.getDesktop().open(f.toFile());
 		} 
 		catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -82,14 +92,21 @@ public class Application {
 	}
 	
 	// When a folder is opened
-	public void openFolder(final DefaultMutableTreeNode parentNode, final File subdir, boolean saveState) {
-		if(!subdir.isDirectory()) throw new IllegalArgumentException("Folder expected");
+	public void openFolder(final DefaultMutableTreeNode parentNode, final Path subdir, boolean saveState) {
+		if(!Files.isDirectory(subdir)) throw new IllegalArgumentException("Folder expected");
 		
-		if(nav.sameState(parentNode, subdir)) return; // no need to open the folder already opened
+		try {
+			if(nav.sameState(parentNode, subdir)) {
+				System.out.println("folder already opened");
+				return; // no need to open the folder already opened
+			}
+			
+			if(saveState) nav.saveState(parentNode, subdir); // update the navigation stack
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
 		
-		if(saveState) nav.saveState(parentNode, subdir); // update the navigation stack
-		
-		nav.setPath(subdir.getAbsolutePath());
+		nav.setPath(subdir.toString());
 		
 		tree.setEnabled(false);
 		table.setEnabled(false);
@@ -102,48 +119,57 @@ public class Application {
 			@Override
 			protected Void doInBackground() throws Exception {
 				// find the node corresponding to the subdir in the tree
+				boolean found = false;
 		    	for (int i = 0; i < childrenCount; i++) {
 		    		DefaultMutableTreeNode child = (DefaultMutableTreeNode)tree.getModel().getChild(parentNode, i);
-		    		File f = (File) child.getUserObject();
+		    		Path f = (Path) child.getUserObject();
 		    		if(f.equals(subdir)) {
 		    			publish(child);
+		    			found = true;
 		    			break;
 		    		}
 				}
+		    	if(!found) throw new IllegalStateException("Node not found");
 		    	return null;
 			}
 			
 			@Override
 			protected void process(List<DefaultMutableTreeNode> chunks) { // in EDT
 				final DefaultMutableTreeNode node = chunks.get(0);
-				SwingWorker<Void, File> worker2 = new SwingWorker<Void, File>() {
+				SwingWorker<Void, Path> worker2 = new SwingWorker<Void, Path>() {
 		            @Override
 		            public Void doInBackground() {
-
-		            	final File[] files = FileSystemView.getFileSystemView().getFiles(subdir, true);
-		            	
-		            	// lazy tree loading
-		                if ( node.isLeaf()) {
-		                	System.out.println("publish");
-		                    for (File child : files) {
-		                        if (child.isDirectory()) {
-		                            publish(child);
-		                        }
-		                    }
-		                }
-		                
-		                //Fill the table with files ( /!\ call EDT thread with invoke later )
-		                SwingUtilities.invokeLater(new Runnable() {
-		                	public void run() {
-		                		table.setTableData(files);
-		                	}
-		                });
-		                return null;
+		            	try {
+		            		DirectoryStream<Path> stream = nav.getStreamFromGlobbing(subdir);
+		            		// lazy tree loading
+			                if ( node.isLeaf()) {
+			                	System.out.println("publish");
+			            	    for (Path file: stream) {
+			            	    	if(Files.isDirectory(file)) {
+			            	    		publish(file);
+			            	    	}
+			            	    }
+			                }
+			                stream.close();
+			                
+			                //Fill the table with files ( /!\ call EDT thread with invoke later )
+			                SwingUtilities.invokeLater(new Runnable() {
+			                	public void run() {
+			                		table.setTableData(subdir);
+			                	}
+			                });
+		            	} catch (AccessDeniedException ex) {
+		            		JOptionPane.showMessageDialog(gui, "Access denied to "+ex.getMessage(), "Error",
+		    	                    JOptionPane.ERROR_MESSAGE);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+		            	return null;
 		            }
 
 		            @Override
-		            protected void process(List<File> chunks) { // executed in EDT
-		                for (File child : chunks) {
+		            protected void process(List<Path> chunks) { // executed in EDT
+		                for (Path child : chunks) {
 		                    node.add(new DefaultMutableTreeNode(child)); // population of the tree
 		                }
 		            }

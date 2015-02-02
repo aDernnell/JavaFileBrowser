@@ -6,6 +6,10 @@ import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -45,7 +49,7 @@ public class FileTable {
         DefaultTableColumnModel colModel = (DefaultTableColumnModel) view.getColumnModel();
         for (int i = 0; i < model.getColumnCount(); i++) {
         	TableColumn col = colModel.getColumn(i);
-        	if(model.getColumnClass(i).equals(Date.class) || model.getColumnClass(i).equals(Size.class))
+        	if(model.getColumnClass(i).equals(FileTime.class) || model.getColumnClass(i).equals(Size.class))
         		col.setCellRenderer(new FileTableCellRenderer());
         }
         
@@ -104,8 +108,8 @@ public class FileTable {
 		        }
 				
 				else if(SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) { // double click
-					File file = model.getFile(row);
-					if(file.isDirectory()) {
+					Path file = model.getFile(row);
+					if(Files.isDirectory(file)) {
 						System.out.println("open folder from table");
 						Application.instance().openFolder(Application.instance().getTree().getSelectedNode(),file, true);
 					}
@@ -118,22 +122,22 @@ public class FileTable {
         
 	}
 	
-	public List<File> getSelectedFiles() {
+	public List<Path> getSelectedFiles() {
 		int[] indices = view.getSelectedRows();
-		List<File> lf = new ArrayList<File>();
+		List<Path> lf = new ArrayList<Path>();
 		for (int index : indices) {
 			lf.add(model.getFile(index));
 		}
 		return lf;
 	}
 	
-	public File getLeadSelectedFile() {
+	public Path getLeadSelectedFile() {
 		int index = view.getSelectionModel().getLeadSelectionIndex();
 		return model.getFile(index);
 	}
 	
-	public void setTableData(File[] files) {
-		model.setFiles(files);
+	public void setTableData(Path parentFolder) {
+		model.setFiles(parentFolder);
 		setColumnsWidth();
 		setRowsHeight();
 	}
@@ -158,7 +162,7 @@ public class FileTable {
 	
 	private void setRowsHeight() {
 		if(model.getRowCount()>0) {
-			Icon icon = FileSystemView.getFileSystemView().getSystemIcon(model.getFile(0));
+			Icon icon = FileSystemView.getFileSystemView().getSystemIcon(model.getFile(0).toFile());
 			view.setRowHeight( icon.getIconHeight()+ROW_PADDING );
 		}
 		

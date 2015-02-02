@@ -3,19 +3,22 @@ package app.component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.tree.DefaultMutableTreeNode;
+
+import org.jdesktop.xswingx.PromptSupport;
 
 import util.FolderState;
 
@@ -26,6 +29,7 @@ public class NavigationBar {
     private JPanel container;
 	private JProgressBar progressBar;
 	private JTextField path;
+	private JTextField filter;
     
     // the stack for navigation in folders
     private FolderState stack;
@@ -73,17 +77,20 @@ public class NavigationBar {
         progressBar = new JProgressBar();
         
         path = new JTextField();
+        filter = new JTextField();
+        PromptSupport.setPrompt("Filter", filter);
         
         container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.X_AXIS));
         container.add(toolBar);
         container.add(path);
         container.add(progressBar);
+        container.add(filter);
 		
     }
     
     // Navigation stack update
- 	public void saveState(DefaultMutableTreeNode parentNode, File subdir) {
+ 	public void saveState(DefaultMutableTreeNode parentNode, Path subdir) throws IOException {
  		if(stack==null) {
  			System.out.println("saving first folder");
  			stack = new FolderState(parentNode, subdir);
@@ -98,8 +105,13 @@ public class NavigationBar {
  		}
  	}
  	
- 	public boolean sameState(DefaultMutableTreeNode parentNode, File subdir) {
- 		return stack!=null && stack.getParentNode().equals(parentNode) && stack.getSubdir().equals(subdir);
+ 	public DirectoryStream<Path> getStreamFromGlobbing(Path folder) throws IOException {
+ 		String filter = this.filter.getText().equals("") ? "*" : this.filter.getText();
+ 		return Files.newDirectoryStream(folder, filter);
+ 	}
+ 	
+ 	public boolean sameState(DefaultMutableTreeNode parentNode, Path subdir) throws IOException {
+ 		return stack!=null && stack.getParentNode().equals(parentNode) && Files.isSameFile(stack.getSubdir(),subdir);
  	}
     
     public FolderState getStack() {

@@ -2,7 +2,12 @@ package app.component;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.DirectoryIteratorException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
@@ -39,7 +44,7 @@ public class FileTree {
         view.setRootVisible(false);
         //view.setExpandsSelectedPaths(true);
         view.setCellRenderer(new FileTreeCellRenderer());
-        view.expandRow(0);
+        //view.expandRow(0);
         
         view.addMouseListener(new MouseListener() {
 			@Override
@@ -50,11 +55,11 @@ public class FileTree {
 			
 			@Override
 			public void mousePressed(MouseEvent e) {
-				System.out.println(e);
+				//System.out.println(e);
 				TreePath curTreePath = view.getClosestPathForLocation(e.getX(),e.getY());
 
-		        view.clearSelection();
-		        view.addSelectionPath(curTreePath);
+		        //view.clearSelection();
+		        //view.addSelectionPath(curTreePath);
 				
 			}
 			
@@ -98,13 +103,13 @@ public class FileTree {
 			
 			@Override
 			public void valueChanged(TreeSelectionEvent e) {
-				System.out.println(e);
+				//System.out.println(e);
 				DefaultMutableTreeNode node = (DefaultMutableTreeNode)view.getLastSelectedPathComponent();
 				if(/*view.isValid() &&*/ node != null) {
 	                currentSelectedNode = node;
-	                File f = (File)node.getUserObject();
+	                Path p = (Path)node.getUserObject();
 	                System.out.println("open folder from tree");
-	                Application.instance().openFolder((DefaultMutableTreeNode)node.getParent(),f, true);
+	                Application.instance().openFolder((DefaultMutableTreeNode)node.getParent(),p, true);
 	                
             	}
             	else currentSelectedNode = node;
@@ -114,8 +119,8 @@ public class FileTree {
 	
 	private void initRoot() {
 		// show the file system roots.
-		FileSystemView fsv = FileSystemView.getFileSystemView();
-        File[] roots = fsv.getRoots();
+		//FileSystemView fsv = FileSystemView.getFileSystemView();
+        /*File[] roots = fsv.getRoots();
         for (File fileSystemRoot : roots) {
             DefaultMutableTreeNode node = new DefaultMutableTreeNode(fileSystemRoot);
             root.add( node );
@@ -126,6 +131,21 @@ public class FileTree {
                     node.add(new DefaultMutableTreeNode(file));
                 }
             }
+        }*/
+        Iterable<Path> dirs = FileSystems.getDefault().getRootDirectories();
+        for (Path dir: dirs) {
+        	DefaultMutableTreeNode node = new DefaultMutableTreeNode(dir);
+        	root.add( node );
+        	/*try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) { // resource closed automatically
+        	    for (Path file: stream) {
+        	    	if(Files.isDirectory(file)) {
+        	    		node.add(new DefaultMutableTreeNode(file));
+        	    		System.out.println(file.getFileName());
+        	    	}
+        	    }
+        	} catch (IOException | DirectoryIteratorException ex) {
+        	    System.err.println(ex);
+        	}*/
         }
 	}
 	

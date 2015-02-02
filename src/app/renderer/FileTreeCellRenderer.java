@@ -1,7 +1,7 @@
 package app.renderer;
 
 import java.awt.Component;
-import java.io.File;
+import java.nio.file.Path;
 
 import javax.swing.JLabel;
 import javax.swing.JTree;
@@ -31,9 +31,9 @@ public class FileTreeCellRenderer extends DefaultTreeCellRenderer {
             int row,
             boolean hasFocus) {
         DefaultMutableTreeNode node = (DefaultMutableTreeNode)value;
-        File file = (File)node.getUserObject();
-        label.setIcon(fileSystemView.getSystemIcon(file));
-        label.setText(fileSystemView.getSystemDisplayName(file));
+        Path file = (Path)node.getUserObject();
+        label.setIcon(fileSystemView.getSystemIcon(file.toFile()));
+        label.setText(fileSystemView.getSystemDisplayName(file.toFile()));
         //label.setToolTipText(file.getPath());
 
         if (selected) {

@@ -1,6 +1,7 @@
 package util;
 
-import java.io.File;
+
+import java.nio.file.Path;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -8,14 +9,14 @@ import app.Application;
 
 public class FolderState {
 	private DefaultMutableTreeNode parentNode;
-	private File subdir;
+	private Path subdir;
 	private FolderState previous, next;
 	
 	public FolderState(){
 		
 	}
 	
-	public FolderState(DefaultMutableTreeNode parentNode, File subdir) {
+	public FolderState(DefaultMutableTreeNode parentNode, Path subdir) {
 		this.parentNode = parentNode;
 		this.subdir = subdir;
 	}
@@ -57,11 +58,11 @@ public class FolderState {
 		this.parentNode = parentNode;
 	}
 
-	public File getSubdir() {
+	public Path getSubdir() {
 		return subdir;
 	}
 
-	public void setSubdir(File subdir) {
+	public void setSubdir(Path subdir) {
 		this.subdir = subdir;
 	}
 	

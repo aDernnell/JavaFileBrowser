@@ -11,9 +11,9 @@ import javax.swing.JOptionPane;
 
 import app.component.FileTable;
 
-public class BrowseActionListener extends FileTableActionListener{
-	
-	public BrowseActionListener(FileTable ft) {
+public class EditActionListener extends FileTableActionListener{
+
+	public EditActionListener(FileTable ft) {
 		super(ft);
 	}
 
@@ -23,7 +23,7 @@ public class BrowseActionListener extends FileTableActionListener{
 		// for all selected files
 		for (Path file : files) {
 			try {
-	            Desktop.getDesktop().browse(file.toUri());
+	            Desktop.getDesktop().edit(file.toFile());
 	        } catch (IOException ex) {
 	            JOptionPane.showMessageDialog((Component)ft.getView(), ex.getMessage(), "Error",
 	                    JOptionPane.ERROR_MESSAGE);
