@@ -65,6 +65,11 @@ public class FileTable {
 			
 			private void maybeShowPopup(MouseEvent e) {
 				if (e.isPopupTrigger()) {
+					// select the row before popup if not yet selected (erase the previous selection
+					int row = view.rowAtPoint(new Point(e.getX(), e.getY()));
+					if(!view.getSelectionModel().isSelectedIndex(row))
+						view.setRowSelectionInterval(row, row);
+					
 					PopupMenu popup = new PopupMenu();
 		            popup.show(e.getComponent(),e.getX(), e.getY());
 		        }
@@ -120,6 +125,11 @@ public class FileTable {
 			lf.add(model.getFile(index));
 		}
 		return lf;
+	}
+	
+	public File getLeadSelectedFile() {
+		int index = view.getSelectionModel().getLeadSelectionIndex();
+		return model.getFile(index);
 	}
 	
 	public void setTableData(File[] files) {
