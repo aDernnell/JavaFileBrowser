@@ -5,8 +5,10 @@ import javax.swing.JPopupMenu;
 
 import app.Application;
 import app.actionlistener.BrowseActionListener;
+import app.actionlistener.CopyActionListener;
 import app.actionlistener.EditActionListener;
 import app.actionlistener.OpenActionListener;
+import app.actionlistener.PasteActionListener;
 
 public class PopupMenu extends JPopupMenu {
 	
@@ -33,7 +35,9 @@ public class PopupMenu extends JPopupMenu {
 		jMenuItemEdit = new JMenuItem("Edit");
 		jMenuItemEdit.addActionListener(new EditActionListener(ft));
 		jMenuItemCopy = new JMenuItem("Copy");
+		jMenuItemCopy.addActionListener(new CopyActionListener(ft));
 		jMenuItemPaste = new JMenuItem("Paste");
+		jMenuItemPaste.addActionListener(new PasteActionListener(ft));
 		jMenuItemRename = new JMenuItem("Rename");
 		jMenuItemSuppr = new JMenuItem("Delete");
 		

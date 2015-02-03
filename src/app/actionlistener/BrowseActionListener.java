@@ -1,13 +1,11 @@
 package app.actionlistener;
 
-import java.awt.Component;
-import java.awt.Desktop;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
-import javax.swing.JOptionPane;
+
+import util.DesktopAPI;
 
 import app.component.FileTable;
 
@@ -22,12 +20,7 @@ public class BrowseActionListener extends FileTableActionListener{
 		List<Path> files = ft.getSelectedFiles();
 		// for all selected files
 		for (Path file : files) {
-			try {
-	            Desktop.getDesktop().browse(file.toUri());
-	        } catch (IOException ex) {
-	            JOptionPane.showMessageDialog((Component)ft.getView(), ex.getMessage(), "Error",
-	                    JOptionPane.ERROR_MESSAGE);
-	        }
+            DesktopAPI.browse(file.toUri());
 		}
 		
 	}

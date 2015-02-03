@@ -12,19 +12,19 @@ public class DesktopAPI {
 
     public static boolean browse(URI uri) {
 
-        if (openSystemSpecific(uri.toString())) return true;
-
         if (browseDESKTOP(uri)) return true;
+        
+        if (openSystemSpecific(uri.toString())) return true;
 
         return false;
     }
 
 
     public static boolean open(File file) {
+    	
+    	if (openDESKTOP(file)) return true;
 
         if (openSystemSpecific(file.getPath())) return true;
-
-        if (openDESKTOP(file)) return true;
 
         return false;
     }
@@ -32,13 +32,14 @@ public class DesktopAPI {
 
     public static boolean edit(File file) {
 
-        // you can try something like
+        // we can try something like
         // runCommand("gimp", "%s", file.getPath())
-        // based on user preferences.
+        // based on user preferences...
+    	
+    	if (editDESKTOP(file)) return true;
 
         if (openSystemSpecific(file.getPath())) return true;
 
-        if (editDESKTOP(file)) return true;
 
         return false;
     }
@@ -76,7 +77,7 @@ public class DesktopAPI {
             }
 
             if (!Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                logErr("BORWSE is not supported.");
+                logErr("BROWSE is not supported.");
                 return false;
             }
 

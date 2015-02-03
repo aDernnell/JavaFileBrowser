@@ -9,12 +9,17 @@ import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.swing.ImageIcon;
+import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
 
 import app.Application;
+import app.component.FileTable;
 
 import util.Size;
 
@@ -32,10 +37,6 @@ public class FileTableModel extends AbstractTableModel {
 
     public FileTableModel() {
         files = new ArrayList<Path>();
-    }
-
-    public FileTableModel(Path parentFolder) {
-        setFiles(parentFolder);
     }
 
     public Object getValueAt(int row, int column) {
@@ -99,7 +100,7 @@ public class FileTableModel extends AbstractTableModel {
         }   
     }
     
-    public int getColumnMaxWidth(int column) {
+    /*public int getColumnMaxWidth(int column) {
     	switch (column) {
 	        case 0:
 	            return 20;
@@ -115,6 +116,23 @@ public class FileTableModel extends AbstractTableModel {
 	        default:
 	        	return 20;
 	    } 
+    }*/
+    
+    public int getColumnPreferedWidth(int column) {
+    	switch (column) {
+	        case 0:
+	            return 50;
+	        case 1:
+	            return 200;
+	        case 2:
+	            return 40;
+	        case 3:
+	            return 100;
+	        case 4:
+	            return 40;
+	        default:
+	        	return 50;
+	    } 
     }
 
     public String getColumnName(int column) {
@@ -129,16 +147,37 @@ public class FileTableModel extends AbstractTableModel {
         return files.get(row);
     }
 
-    public void setFiles(Path parentFolder) {
+    public void setFiles(final Path parentFolder, final FileTable controller) {
     	files = new ArrayList<Path>();
-    	try (DirectoryStream<Path> stream = Application.instance().getNav().getStreamFromGlobbing(parentFolder)) {
-    	    for (Path file: stream) {
-    	        files.add(file);
-    	    }
-    	} catch (IOException | DirectoryIteratorException x) {
-    	    System.err.println(x);
-    	}
-        fireTableDataChanged();
+    	SwingWorker<Void, Path> worker = new SwingWorker<Void, Path>() {
+			@Override
+			protected Void doInBackground() throws Exception {
+				try (DirectoryStream<Path> stream = Application.instance().getNav().getStreamFromGlobbing(parentFolder)) {
+		    	    for (Path file: stream) {
+		    	        publish(file);
+		    	    }
+		    	} catch (IOException | DirectoryIteratorException x) {
+		    	    System.err.println(x);
+		    	}
+				return null;
+			}
+			
+			@Override
+			protected void process(List<Path> chunks) { // in EDT
+				files.addAll(chunks);
+			}
+			
+			@Override
+            protected void done() {
+				fireTableDataChanged();
+				//controller.setColumnsWidth();
+				//controller.setRowsHeight();
+				controller.setCellsSize();
+				Application.instance().getNav().activateProgressBar(false);
+            }
+    		
+    	};
+    	worker.execute();
     }
 
 }

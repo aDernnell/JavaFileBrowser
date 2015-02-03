@@ -1,6 +1,8 @@
 package app.renderer;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import javax.swing.JLabel;
@@ -43,6 +45,13 @@ public class FileTreeCellRenderer extends DefaultTreeCellRenderer {
             label.setBackground(backgroundNonSelectionColor);
             label.setForeground(textNonSelectionColor);
         }
+        
+        if(!Files.isReadable(file)) {
+			label.setForeground(new Color(200,200,200));
+		}
+		else label.setForeground(new Color(0,0,0));
+        
+        
 
         return label;
     }

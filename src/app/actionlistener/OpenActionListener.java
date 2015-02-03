@@ -16,10 +16,10 @@ public class OpenActionListener extends FileTableActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		Path file = ft.getLeadSelectedFile();
-		if(Files.isDirectory(file)) {
+		if(Files.isDirectory(file) && Files.isReadable(file)) {
 			Application.instance().openFolder(Application.instance().getTree().getSelectedNode(),file, true);
 		}
-		else Application.instance().openFile(file);	
+		else if(Files.isReadable(file)) Application.instance().openFile(file);	
 	}
 
 }

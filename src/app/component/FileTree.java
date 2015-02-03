@@ -106,13 +106,14 @@ public class FileTree {
 				//System.out.println(e);
 				DefaultMutableTreeNode node = (DefaultMutableTreeNode)view.getLastSelectedPathComponent();
 				if(/*view.isValid() &&*/ node != null) {
-	                currentSelectedNode = node;
-	                Path p = (Path)node.getUserObject();
-	                System.out.println("open folder from tree");
-	                Application.instance().openFolder((DefaultMutableTreeNode)node.getParent(),p, true);
 	                
+	                Path p = (Path)node.getUserObject();
+	                if(Files.isReadable(p)) {
+	                	currentSelectedNode = node;
+	                	System.out.println("open folder from tree");
+		                Application.instance().openFolder((DefaultMutableTreeNode)node.getParent(),p, true);
+	                }
             	}
-            	else currentSelectedNode = node;
 			}
 		}); 
 	}

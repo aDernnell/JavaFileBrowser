@@ -49,8 +49,8 @@ public class FileTable {
         DefaultTableColumnModel colModel = (DefaultTableColumnModel) view.getColumnModel();
         for (int i = 0; i < model.getColumnCount(); i++) {
         	TableColumn col = colModel.getColumn(i);
-        	if(model.getColumnClass(i).equals(FileTime.class) || model.getColumnClass(i).equals(Size.class))
-        		col.setCellRenderer(new FileTableCellRenderer());
+        	if(model.getColumnClass(i).equals(FileTime.class) || model.getColumnClass(i).equals(Size.class) || i==1)
+        		col.setCellRenderer(new FileTableCellRenderer(this));
         }
         
         // Mouse listener
@@ -109,11 +109,11 @@ public class FileTable {
 				
 				else if(SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) { // double click
 					Path file = model.getFile(row);
-					if(Files.isDirectory(file)) {
+					if(Files.isDirectory(file) && Files.isReadable(file)) {
 						System.out.println("open folder from table");
 						Application.instance().openFolder(Application.instance().getTree().getSelectedNode(),file, true);
 					}
-					else Application.instance().openFile(file);
+					else if(Files.isReadable(file)) Application.instance().openFile(file);
 				}
 				
 			}
@@ -137,12 +137,10 @@ public class FileTable {
 	}
 	
 	public void setTableData(Path parentFolder) {
-		model.setFiles(parentFolder);
-		setColumnsWidth();
-		setRowsHeight();
+		model.setFiles(parentFolder, this);
 	}
 	
-	private void setColumnsWidth() {
+	/*public void setColumnsWidth() {
 		DefaultTableColumnModel colModel = (DefaultTableColumnModel) view.getColumnModel();
 		for (int i = 0; i < model.getColumnCount(); i++) {
 			TableColumn col = colModel.getColumn(i);
@@ -160,12 +158,34 @@ public class FileTable {
 		}
 	}
 	
-	private void setRowsHeight() {
+	public void setRowsHeight() {
 		if(model.getRowCount()>0) {
 			Icon icon = FileSystemView.getFileSystemView().getSystemIcon(model.getFile(0).toFile());
 			view.setRowHeight( icon.getIconHeight()+ROW_PADDING );
 		}
 		
+	}*/
+	
+	public void setCellsSize() {
+		Dimension iconSize = new Dimension(0,0);
+		if(model.getRowCount()>0) {
+			Icon icon = FileSystemView.getFileSystemView().getSystemIcon(model.getFile(0).toFile());
+			iconSize.setSize(icon.getIconWidth() + COL_PADDING, icon.getIconHeight() + ROW_PADDING);
+			view.setRowHeight( iconSize.height );
+		}
+		DefaultTableColumnModel colModel = (DefaultTableColumnModel) view.getColumnModel();
+		colModel.getColumn(0).setPreferredWidth(iconSize.width);
+		for (int i = 1; i < model.getColumnCount(); i++) {
+			TableColumn col = colModel.getColumn(i);
+			col.setPreferredWidth(model.getColumnPreferedWidth(i) + COL_PADDING);
+		}
+		
+		
+		
+	}
+	
+	public void update() {
+		setTableData(Application.instance().getNav().getStack().getSubdir());
 	}
 
 	public JTable getView() {

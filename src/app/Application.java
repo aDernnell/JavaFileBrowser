@@ -1,9 +1,7 @@
 package app;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Container;
-import java.awt.Desktop;
 import java.awt.Image;
 import java.io.IOException;
 import java.net.URL;
@@ -27,6 +25,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
+
+import util.DesktopAPI;
 
 import app.component.FileTable;
 import app.component.FileTree;
@@ -82,13 +82,7 @@ public class Application {
 	// When a file is opened
 	public void openFile(Path f) {
 		if(Files.isDirectory(f)) throw new IllegalArgumentException("File expected");
-		try {
-			Desktop.getDesktop().open(f.toFile());
-		} 
-		catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		DesktopAPI.open(f.toFile());
 	}
 	
 	// When a folder is opened
@@ -106,7 +100,7 @@ public class Application {
 			e.printStackTrace();
 		}
 		
-		nav.setPath(subdir.toString());
+		nav.setPath(subdir.toString()); // display the path of the folder
 		
 		tree.setEnabled(false);
 		table.setEnabled(false);
@@ -180,7 +174,7 @@ public class Application {
 		        		tree.getView().setSelectionPath(new TreePath(node.getPath()));
 		        		tree.getView().scrollPathToVisible(new TreePath(node.getPath()));
 		        		
-		                nav.activateProgressBar(false);
+		                //nav.activateProgressBar(false); // done in FileTableModel
 		                tree.setEnabled(true);
 		                table.setEnabled(true);
 		            }
