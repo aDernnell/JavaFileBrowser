@@ -1,34 +1,27 @@
 package app.component;
 
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.File;
-import java.nio.file.DirectoryStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.swing.Icon;
-import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.table.DefaultTableColumnModel;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import model.FileTableModel;
 import util.Size;
-
 import app.Application;
 import app.renderer.FileTableCellRenderer;
-
-import model.FileTableModel;
 
 public class FileTable {
 	private static final int ROW_PADDING = 4;
@@ -111,9 +104,24 @@ public class FileTable {
 					Path file = model.getFile(row);
 					if(Files.isDirectory(file) && Files.isReadable(file)) {
 						System.out.println("open folder from table");
-						Application.instance().openFolder(Application.instance().getTree().getSelectedNode(),file, true);
+						Application.instance().openFolder(Application.instance().getCurrentPage().getTree().getSelectedNode(),file, true);
 					}
 					else if(Files.isReadable(file)) Application.instance().openFile(file);
+				}
+				
+				else if(SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 1) {
+					Path file = model.getFile(row);
+					String[] parts = file.getFileName().toString().split("\\.");
+					String ext = parts[parts.length-1];
+					if(ext.equals("pdf")) {
+						try {
+							Application.instance().getCurrentPage().getViewer().setup(file.toString());
+							
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							System.err.println("Error loading pdf : "+e1.getMessage());
+						}
+					}
 				}
 				
 			}
@@ -185,7 +193,7 @@ public class FileTable {
 	}
 	
 	public void update() {
-		setTableData(Application.instance().getNav().getStack().getSubdir());
+		setTableData(Application.instance().getCurrentPage().getNav().getStack().getSubdir());
 	}
 
 	public JTable getView() {

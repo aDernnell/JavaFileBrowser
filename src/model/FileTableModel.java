@@ -8,20 +8,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreePath;
-
-import app.Application;
-import app.component.FileTable;
 
 import util.Size;
+import app.Application;
+import app.component.FileTable;
 
 public class FileTableModel extends AbstractTableModel {
 	
@@ -146,13 +142,17 @@ public class FileTableModel extends AbstractTableModel {
     public Path getFile(int row) {
         return files.get(row);
     }
+    
+    public void removeFile(int row) {
+    	files.remove(row);
+    }
 
     public void setFiles(final Path parentFolder, final FileTable controller) {
     	files = new ArrayList<Path>();
     	SwingWorker<Void, Path> worker = new SwingWorker<Void, Path>() {
 			@Override
 			protected Void doInBackground() throws Exception {
-				try (DirectoryStream<Path> stream = Application.instance().getNav().getStreamFromGlobbing(parentFolder)) {
+				try (DirectoryStream<Path> stream = Application.instance().getCurrentPage().getNav().getStreamFromGlobbing(parentFolder)) {
 		    	    for (Path file: stream) {
 		    	        publish(file);
 		    	    }
@@ -173,7 +173,7 @@ public class FileTableModel extends AbstractTableModel {
 				//controller.setColumnsWidth();
 				//controller.setRowsHeight();
 				controller.setCellsSize();
-				Application.instance().getNav().activateProgressBar(false);
+				Application.instance().getCurrentPage().getNav().activateProgressBar(false);
             }
     		
     	};

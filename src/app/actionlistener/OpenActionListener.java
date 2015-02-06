@@ -17,7 +17,7 @@ public class OpenActionListener extends FileTableActionListener {
 	public void actionPerformed(ActionEvent e) {
 		Path file = ft.getLeadSelectedFile();
 		if(Files.isDirectory(file) && Files.isReadable(file)) {
-			Application.instance().openFolder(Application.instance().getTree().getSelectedNode(),file, true);
+			Application.instance().openFolder(Application.instance().getCurrentPage().getTree().getSelectedNode(),file, true);
 		}
 		else if(Files.isReadable(file)) Application.instance().openFile(file);	
 	}

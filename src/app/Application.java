@@ -6,7 +6,6 @@ import java.awt.Image;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.AccessDeniedException;
-import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,20 +16,19 @@ import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
-import javax.swing.filechooser.FileSystemView;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
 import util.DesktopAPI;
-
 import app.component.FileTable;
 import app.component.FileTree;
 import app.component.NavigationBar;
+import app.component.Pager;
+import app.component.TabPage;
 
 
 public class Application {
@@ -41,11 +39,7 @@ public class Application {
 	// Main Gui container
 	private JPanel gui;
     
-    private FileTree tree;
-    
-    private FileTable table;
-    
-    private NavigationBar nav;
+    private Pager pager;
     
 
 	public Container getGui() {
@@ -53,30 +47,14 @@ public class Application {
 			gui = new JPanel(new BorderLayout(3,3));
             gui.setBorder(new EmptyBorder(5,5,5,5));
             
-			tree = new FileTree();
-			JScrollPane treeScroll = new JScrollPane(tree.getView());
-			gui.add(treeScroll, BorderLayout.WEST);
-			
-			table = new FileTable();
-			JScrollPane tableScroll = new JScrollPane(table.getView());
-			gui.add(tableScroll);
-			
-			nav = new NavigationBar();
-			gui.add(nav.getView(), BorderLayout.NORTH);
+			pager = new Pager();
+			gui.add(pager.getView());
 		}
 		return gui;
 	}
 	
-	public FileTree getTree() {
-		return tree;
-	}
-	
-	public FileTable getTable() {
-		return table;
-	}
-	
-	public NavigationBar getNav() {
-		return nav;
+	public TabPage getCurrentPage() {
+		return pager.getCurrentPage();
 	}
 
 	// When a file is opened
@@ -88,6 +66,11 @@ public class Application {
 	// When a folder is opened
 	public void openFolder(final DefaultMutableTreeNode parentNode, final Path subdir, boolean saveState) {
 		if(!Files.isDirectory(subdir)) throw new IllegalArgumentException("Folder expected");
+		
+		final NavigationBar nav = getCurrentPage().getNav();
+		final FileTree tree = getCurrentPage().getTree();
+		final FileTable table = getCurrentPage().getTable();
+		
 		
 		try {
 			if(nav.sameState(parentNode, subdir)) {
@@ -173,6 +156,7 @@ public class Application {
 		            	// select the node
 		        		tree.getView().setSelectionPath(new TreePath(node.getPath()));
 		        		tree.getView().scrollPathToVisible(new TreePath(node.getPath()));
+		        		//getCurrentPage().adjustSize();
 		        		
 		                //nav.activateProgressBar(false); // done in FileTableModel
 		                tree.setEnabled(true);
@@ -221,7 +205,7 @@ public class Application {
                 f.setMinimumSize(f.getSize());
                 f.setVisible(true);
 
-                Application.instance().tree.showRootFile();
+                Application.instance().getCurrentPage().getTree().showRootFile();
             }
         });
 	}

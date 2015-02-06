@@ -11,9 +11,8 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import app.component.FileTable;
-
 import util.Size;
+import app.component.FileTable;
 
 public class FileTableCellRenderer extends DefaultTableCellRenderer {
 	

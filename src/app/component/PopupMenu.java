@@ -6,6 +6,7 @@ import javax.swing.JPopupMenu;
 import app.Application;
 import app.actionlistener.BrowseActionListener;
 import app.actionlistener.CopyActionListener;
+import app.actionlistener.DeleteActionListener;
 import app.actionlistener.EditActionListener;
 import app.actionlistener.OpenActionListener;
 import app.actionlistener.PasteActionListener;
@@ -27,7 +28,7 @@ public class PopupMenu extends JPopupMenu {
 
 	public PopupMenu(String label) {
 		super(label);
-		FileTable ft = Application.instance().getTable();
+		FileTable ft = Application.instance().getCurrentPage().getTable();
 		jMenuItemOpen = new JMenuItem("Open");
 		jMenuItemOpen.addActionListener(new OpenActionListener(ft));
 		jMenuItemBrowse = new JMenuItem("Browse");
@@ -40,6 +41,7 @@ public class PopupMenu extends JPopupMenu {
 		jMenuItemPaste.addActionListener(new PasteActionListener(ft));
 		jMenuItemRename = new JMenuItem("Rename");
 		jMenuItemSuppr = new JMenuItem("Delete");
+		jMenuItemSuppr.addActionListener(new DeleteActionListener(ft));
 		
 		add(jMenuItemOpen);
 		add(jMenuItemBrowse);

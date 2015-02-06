@@ -20,11 +20,13 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.jdesktop.xswingx.PromptSupport;
 
+import app.Application;
+
 import util.FolderState;
 
 public class NavigationBar {
 	
-    private JButton previous, next;
+    private JButton previous, next, refresh;
     private JToolBar toolBar;
     private JPanel container;
 	private JProgressBar progressBar;
@@ -39,6 +41,7 @@ public class NavigationBar {
     	// Navigation buttons
     	Icon previousIcon = new ImageIcon("images/arrow_left_16.png");
 		Icon nextIcon = new ImageIcon("images/arrow_right_16.png");
+		Icon refreshIcon = new ImageIcon("images/refresh_16.png");
 		
 		previous = new JButton(previousIcon);
 		previous.setEnabled(false);
@@ -69,6 +72,18 @@ public class NavigationBar {
 			}
 		});
 		
+		refresh = new JButton(refreshIcon);
+		refresh.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				FileTable ft = Application.instance().getCurrentPage().getTable();
+				activateProgressBar(true);
+				ft.update();
+				
+			}
+		});
+		
 		toolBar = new JToolBar();
 		toolBar.setFloatable(false);
 		toolBar.add(previous);
@@ -86,6 +101,7 @@ public class NavigationBar {
         container.add(path);
         container.add(progressBar);
         container.add(filter);
+        container.add(refresh);
 		
     }
     

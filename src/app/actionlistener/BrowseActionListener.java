@@ -4,9 +4,7 @@ import java.awt.event.ActionEvent;
 import java.nio.file.Path;
 import java.util.List;
 
-
 import util.DesktopAPI;
-
 import app.component.FileTable;
 
 public class BrowseActionListener extends FileTableActionListener{
