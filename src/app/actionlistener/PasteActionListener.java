@@ -114,6 +114,7 @@ public class PasteActionListener extends FileTableActionListener {
 	void copyFolder(Path file, Path target) throws IOException {
 		System.out.println("copying folder "+file+" --> "+target);
 		EnumSet<FileVisitOption> opts = EnumSet.of(FileVisitOption.FOLLOW_LINKS);
+		if(Files.isSameFile(file, target)) return;
         TreeCopier tc = new TreeCopier(file, Paths.get(target.toString()+"/"+file.getFileName()), true);
         
         Files.walkFileTree(file, opts, Integer.MAX_VALUE, tc);
@@ -138,7 +139,6 @@ public class PasteActionListener extends FileTableActionListener {
                 new CopyOption[] { COPY_ATTRIBUTES } : new CopyOption[0];
  
             Path newdir = target.resolve(source.relativize(dir));
-            System.out.println("newdir : "+newdir);
             try {
                 Files.copy(dir, newdir, options);
             } catch (FileAlreadyExistsException x) {
@@ -152,8 +152,7 @@ public class PasteActionListener extends FileTableActionListener {
  
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-            copyFile(file, target.resolve(source.relativize(file)));
-            System.out.println("copying file "+file+" to "+target.resolve(source.relativize(file)));
+            copyFile(file, target.resolve(source.relativize(file)).getParent());
             return CONTINUE;
         }
  

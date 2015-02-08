@@ -11,6 +11,7 @@ import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.activation.MimetypesFileTypeMap;
 import javax.swing.Icon;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
@@ -28,8 +29,12 @@ public class FileTable {
 	private static final int COL_PADDING = 6;
 	private JTable view;
 	private FileTableModel model;
+	private MimetypesFileTypeMap mtftp;
 	
 	public FileTable() {
+		mtftp = new MimetypesFileTypeMap();
+		mtftp.addMimeTypes("image png tif jpg jpeg bmp gif PNG JPG JPEG TIF GIF BMP");
+		
 		model = new FileTableModel();
 		view = new JTable(model);
 		
@@ -67,6 +72,7 @@ public class FileTable {
 					if(!view.getSelectionModel().isSelectedIndex(row))
 						view.setRowSelectionInterval(row, row);
 					
+					// @TODO send the selected file(s) to the menu in order to display only actions that can be done
 					PopupMenu popup = new PopupMenu();
 		            popup.show(e.getComponent(),e.getX(), e.getY());
 		        }
@@ -113,13 +119,25 @@ public class FileTable {
 					Path file = model.getFile(row);
 					String[] parts = file.getFileName().toString().split("\\.");
 					String ext = parts[parts.length-1];
+					String mimetype= mtftp.getContentType(file.toFile()).toLowerCase();
+					System.out.println(mimetype);
+			        String type = mimetype.split("/")[0];
 					if(ext.equals("pdf")) {
 						try {
-							Application.instance().getCurrentPage().getViewer().setup(file.toString());
+							Application.instance().getCurrentPage().getViewer().setupPDF(file.toString());
 							
 						} catch (IOException e1) {
 							// TODO Auto-generated catch block
 							System.err.println("Error loading pdf : "+e1.getMessage());
+						}
+					}
+					else if(type.equals("image")) {
+						try {
+							System.out.println("image preview");
+							Application.instance().getCurrentPage().getViewer().setupImage(file.toString());
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
 						}
 					}
 				}

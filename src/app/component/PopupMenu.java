@@ -8,8 +8,10 @@ import app.actionlistener.BrowseActionListener;
 import app.actionlistener.CopyActionListener;
 import app.actionlistener.DeleteActionListener;
 import app.actionlistener.EditActionListener;
+import app.actionlistener.NewFolderActionListener;
 import app.actionlistener.OpenActionListener;
 import app.actionlistener.PasteActionListener;
+import app.actionlistener.RenameActionListener;
 
 public class PopupMenu extends JPopupMenu {
 	
@@ -20,6 +22,7 @@ public class PopupMenu extends JPopupMenu {
 	private JMenuItem jMenuItemPaste;
 	private JMenuItem jMenuItemRename;
 	private JMenuItem jMenuItemSuppr;
+	private JMenuItem jMenuItemNewFolder;
 	
 
 	public PopupMenu() {
@@ -40,8 +43,11 @@ public class PopupMenu extends JPopupMenu {
 		jMenuItemPaste = new JMenuItem("Paste");
 		jMenuItemPaste.addActionListener(new PasteActionListener(ft));
 		jMenuItemRename = new JMenuItem("Rename");
+		jMenuItemRename.addActionListener(new RenameActionListener(ft));
 		jMenuItemSuppr = new JMenuItem("Delete");
 		jMenuItemSuppr.addActionListener(new DeleteActionListener(ft));
+		jMenuItemNewFolder = new JMenuItem("New Folder");
+		jMenuItemNewFolder.addActionListener(new NewFolderActionListener(ft));
 		
 		add(jMenuItemOpen);
 		add(jMenuItemBrowse);
@@ -50,6 +56,7 @@ public class PopupMenu extends JPopupMenu {
 		add(jMenuItemPaste);
 		add(jMenuItemRename);
 		add(jMenuItemSuppr);
+		add(jMenuItemNewFolder);
 		
 	}
 

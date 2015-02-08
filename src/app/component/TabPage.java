@@ -43,9 +43,9 @@ public class TabPage {
 		panel.add(nav.getView(), BorderLayout.NORTH);
 		
 		viewer = new Viewer();
-		JScrollPane pdfScroll = new JScrollPane(viewer.getView());
+		JScrollPane viewerScroll = new JScrollPane(viewer.getView());
 		splitPane2.add(splitPane1, JSplitPane.LEFT);
-		splitPane2.add(pdfScroll,JSplitPane.RIGHT);
+		splitPane2.add(viewerScroll,JSplitPane.RIGHT);
 		
 		panel.add(splitPane2);
 		
