@@ -38,7 +38,7 @@ public class FileTable {
 		model = new FileTableModel();
 		view = new JTable(model);
 		
-		view.setAutoCreateRowSorter(true);
+		view.setAutoCreateRowSorter(false);
         view.setShowVerticalLines(false);
         view.setShowHorizontalLines(false);
         view.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);

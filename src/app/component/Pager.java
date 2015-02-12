@@ -10,17 +10,17 @@ import app.Application;
 
 public class Pager {
 	private JTabbedPane pane;
-
 	private HashMap<Integer, TabPage> pages;
+	static int num = 1;
 	
 	public Pager() {
 		pane = new JTabbedPane();
 		pages = new HashMap<Integer, TabPage>();
 		
         TabPage tp = new TabPage();
-        pages.put(new Integer(0), tp);
+        //pages.put(new Integer(0), tp);
         pane.add("Tab 0", tp.getView());
-        initTabClose(0);
+        initTabClose(0,tp);
         
         pane.add("", new JLabel());
         initTabAdd(1);
@@ -29,8 +29,8 @@ public class Pager {
 		
 	}
 	
-	private void initTabClose(int i) {
-        pane.setTabComponentAt(i,new CloseTabComponent(this));
+	private void initTabClose(int i, TabPage page) {
+        pane.setTabComponentAt(i,new CloseTabComponent(this,page));
     }
 	private void initTabAdd(int i) {
 		pane.setTabComponentAt(i, new AddTabComponent(this));
@@ -41,11 +41,13 @@ public class Pager {
 	}
 	
 	public TabPage getCurrentPage() {
-		return pages.get(new Integer(pane.getSelectedIndex()));
+		return ((CloseTabComponent)pane.getTabComponentAt(pane.getSelectedIndex())).getPage();
+		//return pages.get(new Integer(pane.getSelectedIndex()));
 	}
 	
 	public void addPage() {
 		int lastIndex = pane.getTabCount()-1;
+		
 		
 		// delete the add tab button
 		pane.remove(lastIndex);
@@ -54,8 +56,9 @@ public class Pager {
 		// add the new tab
 		TabPage tp = new TabPage();
         pages.put(new Integer(lastIndex), tp);
-        pane.add("Tab"+lastIndex, tp.getView());
-        initTabClose(lastIndex);
+        pane.add("Tab"+num, tp.getView());
+        num++;
+        initTabClose(lastIndex,tp);
         
         // add the add tab button
         pane.add("", new JLabel());
@@ -70,7 +73,6 @@ public class Pager {
 	public void removePage(int i) {
 		int count = pane.getTabCount();
 		pane.remove(i);
-		pages.remove(new Integer(i));
 		if(i==count-2) {
 			pane.setSelectedIndex(count-3);
 		}

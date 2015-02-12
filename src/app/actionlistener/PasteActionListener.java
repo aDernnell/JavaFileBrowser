@@ -63,7 +63,7 @@ public class PasteActionListener extends FileTableActionListener {
 				
 				@Override
 	            protected void done() {
-					CopyActionListener.copiedFiles = null;
+					//CopyActionListener.copiedFiles = null;
 					ft.update();
 	            }
 	    		
@@ -80,7 +80,7 @@ public class PasteActionListener extends FileTableActionListener {
 			checkOverwrite=true;
 		}
 		int result = -1;
-		if(checkOverwrite) JOptionPane.showConfirmDialog(ft.getView(),"Overwrite "+path.getFileName()+" ?");
+		if(checkOverwrite) result=JOptionPane.showConfirmDialog(ft.getView(),"Overwrite "+path.getFileName()+" ?");
 		
 		if(!checkOverwrite || result==JOptionPane.YES_OPTION) {
 			Files.copy(path, Paths.get(folder.toString()+"/"+path.getFileName()), REPLACE_EXISTING);

@@ -23,11 +23,13 @@ import javax.swing.plaf.basic.BasicButtonUI;
 
 public class CloseTabComponent extends JPanel {
     private final Pager pager;
+    private TabPage page;
 
-    public CloseTabComponent(final Pager pager) {
+    public CloseTabComponent(final Pager pager, TabPage page) {
         //unset default FlowLayout' gaps
         super(new FlowLayout(FlowLayout.LEFT, 0, 0));
         this.pager = pager;
+        this.page = page;
         setOpaque(false);
         
         //make JLabel read titles from JTabbedPane
@@ -49,6 +51,10 @@ public class CloseTabComponent extends JPanel {
         add(button);
         //add more space to the top of the component
         setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
+    }
+    
+    public TabPage getPage() {
+    	return page;
     }
 
     private class TabButton extends JButton implements ActionListener {

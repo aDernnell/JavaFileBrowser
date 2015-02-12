@@ -8,6 +8,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -20,9 +21,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.jdesktop.xswingx.PromptSupport;
 
-import app.Application;
-
 import util.FolderState;
+import app.Application;
 
 public class NavigationBar {
 	
@@ -39,9 +39,27 @@ public class NavigationBar {
     public NavigationBar() {
     	
     	// Navigation buttons
-    	Icon previousIcon = new ImageIcon("images/arrow_left_16.png");
-		Icon nextIcon = new ImageIcon("images/arrow_right_16.png");
-		Icon refreshIcon = new ImageIcon("images/refresh_16.png");
+    	Icon previousIcon = null;
+		try {
+			previousIcon = new ImageIcon(ImageIO.read(getClass().getResourceAsStream("images/arrow_left_16.png")));
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		Icon nextIcon = null;
+		try {
+			nextIcon = new ImageIcon(ImageIO.read(getClass().getResourceAsStream("images/arrow_right_16.png")));
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		Icon refreshIcon = null;
+		try {
+			refreshIcon = new ImageIcon(ImageIO.read(getClass().getResourceAsStream("images/refresh_16.png")));
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		
 		previous = new JButton(previousIcon);
 		previous.setEnabled(false);

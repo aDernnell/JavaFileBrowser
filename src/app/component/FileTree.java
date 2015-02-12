@@ -112,50 +112,12 @@ public class FileTree {
 	}
 	
 	private void initRoot() {
-		// show the file system roots.
-		//FileSystemView fsv = FileSystemView.getFileSystemView();
-        /*File[] roots = fsv.getRoots();
-        for (File fileSystemRoot : roots) {
-            DefaultMutableTreeNode node = new DefaultMutableTreeNode(fileSystemRoot);
-            root.add( node );
-            System.out.println(fileSystemRoot.toString());
-            File[] files = fsv.getFiles(fileSystemRoot, true);
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    node.add(new DefaultMutableTreeNode(file));
-                }
-            }
-        }*/
         Iterable<Path> dirs = FileSystems.getDefault().getRootDirectories();
         for (Path dir: dirs) {
         	DefaultMutableTreeNode node = new DefaultMutableTreeNode(dir);
         	root.add( node );
-        	/*try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) { // resource closed automatically
-        	    for (Path file: stream) {
-        	    	if(Files.isDirectory(file)) {
-        	    		node.add(new DefaultMutableTreeNode(file));
-        	    		System.out.println(file.getFileName());
-        	    	}
-        	    }
-        	} catch (IOException | DirectoryIteratorException ex) {
-        	    System.err.println(ex);
-        	}*/
         }
 	}
-	
-	/*private TreePath findTreePath(File fileToFind) {
-        for (int i=0; i<view.getRowCount(); i++) {
-            TreePath treePath = view.getPathForRow(i);
-            Object object = treePath.getLastPathComponent();
-            DefaultMutableTreeNode node = (DefaultMutableTreeNode)object;
-            File nodeFile = (File)node.getUserObject();
-
-            if (nodeFile==fileToFind) {
-                return treePath;
-            }
-        }
-        return null; // not found
-    }*/
 	
 	public void showRootFile() {
         view.setSelectionInterval(0,0); // ensure that the main files are displayed
@@ -175,6 +137,12 @@ public class FileTree {
 	
 	public DefaultMutableTreeNode getSelectedNode() {
 		return currentSelectedNode;
+	}
+	
+	public String getSelectedFolderName() {
+		DefaultMutableTreeNode node = (DefaultMutableTreeNode)view.getLastSelectedPathComponent();
+        Path p = (Path)node.getUserObject();
+        return p.getFileName().toString();
 	}
 	
 	
